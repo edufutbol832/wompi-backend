@@ -1,30 +1,40 @@
-from flask import Flask, jsonify
-import hmac
+from flask import Flask, request, jsonify
 import hashlib
-from datetime import datetime
-from flask_cors import CORS
+import hmac
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-# Usamos una variable de entorno para proteger tu clave privada de Wompi
-PRIVATE_KEY = os.environ.get("PRIVATE_KEY", "clave_por_defecto").encode()
+# Usa una variable de entorno (Render) o una clave por defecto para pruebas locales
+SECRET_KEY = os.environ.get("WOMPI_SECRET_KEY", "sec_test_puede_ir_aqui_temporalmente")
 
-@app.route("/generate_signature")
-def generate_signature():
-    amount_in_cents = "150000"
-    currency = "COP"
-    reference = f"pago-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-    message = f"{amount_in_cents}{currency}{reference}"
-    signature = hmac.new(PRIVATE_KEY, message.encode(), hashlib.sha256).hexdigest()
+@app.route('/')
+def home():
+    return "Backend Wompi activo"
 
-    return jsonify({
-        "reference": reference,
-        "signature": signature,
-        "amountInCents": amount_in_cents,
-        "currency": currency
-    })
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    received_signature = request.headers.get('X-Integrity')
+    payload = request.get_data()
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    expected_signature = hmac.new(
+        key=SECRET_KEY.encode(),
+        msg=payload,
+        digestmod=hashlib.sha256
+    ).hexdigest()
+
+    if hmac.compare_digest(received_signature, expected_signature):
+        print("✅ Firma válida - pago confirmado")
+        return jsonify({"message": "OK"}), 200
+    else:
+        print("❌ Firma inválida - posible intento no autorizado")
+        return jsonify({"message": "Firma no válida"}), 400
+
+@app.route('/gracias')
+def gracias():
+    return "Gracias por tu pago (sandbox)", 200
+
+if __name__ == '__main__':
+    app.run()
