@@ -1,40 +1,41 @@
 from flask import Flask, request, jsonify
-import hashlib
-import hmac
-import os
 from flask_cors import CORS
+import hmac
+import hashlib
+import base64
 
 app = Flask(__name__)
 CORS(app)
 
-# Usa una variable de entorno (Render) o una clave por defecto para pruebas locales
-SECRET_KEY = os.environ.get("WOMPI_SECRET_KEY", "sec_test_puede_ir_aqui_temporalmente")
+# 🛠️ CAMBIA ESTA LÍNEA CON TU CLAVE PRIVADA DE PRUEBAS DE WOMPI (debe comenzar con 'prv_test_...')
+PRIVATE_KEY = "prv_test_NTN6kv4XuC5i7Y3bWFRHVlQkBNRhIqvc"  # ← 🔁 REEMPLAZA AQUÍ CON TU CLAVE
 
-@app.route('/')
+@app.route("/")
 def home():
-    return "Backend Wompi activo"
+    return "Servidor Flask activo"
 
-@app.route('/webhook', methods=['POST'])
+@app.route("/webhook", methods=["POST"])
 def webhook():
-    received_signature = request.headers.get('X-Integrity')
-    payload = request.get_data()
+    received_signature = request.headers.get("X-Integrity-Signature")
+    raw_body = request.get_data()
 
-    expected_signature = hmac.new(
-        key=SECRET_KEY.encode(),
-        msg=payload,
-        digestmod=hashlib.sha256
-    ).hexdigest()
+    if not received_signature:
+        return jsonify({"error": "Firma no enviada"}), 400
 
-    if hmac.compare_digest(received_signature, expected_signature):
-        print("✅ Firma válida - pago confirmado")
-        return jsonify({"message": "OK"}), 200
+    computed_signature = base64.b64encode(
+        hmac.new(PRIVATE_KEY.encode(), raw_body, hashlib.sha256).digest()
+    ).decode()
+
+    if hmac.compare_digest(computed_signature, received_signature):
+        print("✅ Firma válida. Webhook recibido correctamente.")
+        return jsonify({"message": "Firma válida"}), 200
     else:
-        print("❌ Firma inválida - posible intento no autorizado")
-        return jsonify({"message": "Firma no válida"}), 400
+        print("❌ Firma inválida.")
+        return jsonify({"error": "Firma inválida"}), 400
 
-@app.route('/gracias')
+@app.route("/gracias")
 def gracias():
-    return "Gracias por tu pago (sandbox)", 200
+    return "<h2>¡Gracias por tu pago!</h2>", 200
 
-if __name__ == '__main__':
-    app.run()
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)

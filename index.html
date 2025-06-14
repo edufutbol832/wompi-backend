@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pago con Wompi</title>
+</head>
+<body>
+  <h2>Botón de pago Wompi</h2>
+  <button id="botonPagoWompi">Pagar con Wompi</button>
+
+  <script src="https://checkout.wompi.co/widget.js"></script>
+  <script>
+    console.log("Script cargado y ejecutándose");
+
+    const checkout = new WidgetCheckout({
+      publicKey: "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG", // ← Tu clave pública sandbox de Wompi
+      currency: "COP",
+      amountInCents: 150000, // $1.500 COP
+      reference: "prueba-integracion-001",
+      redirectUrl: "https://wompi-backend-zodk.onrender.com/gracias", // ← URL a donde se redirige después del pago
+      customerData: {
+        email: "cliente@ejemplo.com"
+      }
+    });
+
+    document.getElementById("botonPagoWompi").addEventListener("click", () => {
+      console.log("Botón clickeado");
+      checkout.open(
+        function (result) {
+          console.log("✅ Pago exitoso:", result);
+        },
+        function (error) {
+          console.error("❌ Error en el pago:", error);
+        }
+      );
+    });
+  </script>
+</body>
+</html>
