@@ -1,44 +1,80 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Confirmación de Pago - Wompi</title>
+  <meta charset="UTF-8">
+  <title>Resultado del Pago</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .estado {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .aprobado {
+      color: green;
+    }
+
+    .rechazado {
+      color: red;
+    }
+
+    .pendiente {
+      color: orange;
+    }
+
+    .info {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
   <h1>✅ Resultado del Pago</h1>
-
-  <p id="mensaje">Cargando datos de la transacción...</p>
+  <div id="resultado"></div>
 
   <script>
-    async function obtenerEstadoTransaccion(idTransaccion) {
-      const url = `https://sandbox.wompi.co/v1/transactions/${idTransaccion}`;
+    const params = new URLSearchParams(window.location.search);
+    const transactionId = params.get('id');
 
-      try {
-        const respuesta = await fetch(url);
-        const data = await respuesta.json();
+    const resultado = document.getElementById('resultado');
 
-        const estado = data.data.status;
-        const monto = data.data.amount_in_cents / 100;
-        const moneda = data.data.currency;
-
-        document.getElementById('mensaje').innerHTML = `
-          <strong>Estado del pago:</strong> ${estado}<br/>
-          <strong>Monto:</strong> $${monto.toLocaleString()} ${moneda}<br/>
-          <strong>ID transacción:</strong> ${idTransaccion}
-        `;
-      } catch (error) {
-        document.getElementById('mensaje').textContent = "❌ Error consultando la transacción.";
-        console.error(error);
-      }
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const idTransaccion = urlParams.get('id');
-
-    if (idTransaccion) {
-      obtenerEstadoTransaccion(idTransaccion);
+    if (!transactionId) {
+      resultado.innerHTML = '<p class="estado rechazado">❌ No se encontró el ID de transacción en la URL.</p>';
     } else {
-      document.getElementById('mensaje').textContent = "❌ No se encontró el ID de transacción en la URL.";
+      fetch(`https://sandbox.wompi.co/v1/transactions/${transactionId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.data) {
+            const estado = data.data.status;
+            const referencia = data.data.reference;
+            const moneda = data.data.currency;
+            const valor = (data.data.amount_in_cents / 100).toFixed(2);
+
+            let claseEstado = "";
+            if (estado === "APPROVED") claseEstado = "aprobado";
+            else if (estado === "DECLINED") claseEstado = "rechazado";
+            else claseEstado = "pendiente";
+
+            resultado.innerHTML = `
+              <p class="estado ${claseEstado}">Estado del pago: ${estado}</p>
+              <div class="info">
+                <p>💳 Referencia: <strong>${referencia}</strong></p>
+                <p>💰 Monto: <strong>${valor} ${moneda}</strong></p>
+              </div>
+            `;
+          } else {
+            resultado.innerHTML = '<p class="estado rechazado">⚠️ No se pudo obtener la información del pago.</p>';
+          }
+        })
+        .catch(error => {
+          resultado.innerHTML = '<p class="estado rechazado">⚠️ Error consultando el estado del pago.</p>';
+          console.error('Error:', error);
+        });
     }
   </script>
 </body>
