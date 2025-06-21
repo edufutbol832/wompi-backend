@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import hashlib
+import os
 
-app = Flask(__name__)
-CORS(app)  # Esta línea habilita CORS para todas las rutas
+app = Flask(__name__, static_url_path='', static_folder='.')
+CORS(app)
 
 SECRET = "test_integrity_CxvWC5XqHUC8eownzkyCMKjfOujwVmqk"
 
@@ -23,8 +24,12 @@ def generate_signature():
 
     cadena = f"{reference}{amount}{currency}{SECRET}"
     firma = hashlib.sha256(cadena.encode('utf-8')).hexdigest()
-
     return jsonify({"signature": firma})
+
+# ✅ Servir archivos HTML estáticos como respuesta.html
+@app.route('/<path:filename>')
+def static_files(filename):
+    return send_from_directory('.', filename)
 
 if __name__ == '__main__':
     app.run()
