@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Confirmación de Pago - Wompi</title>
+</head>
+<body>
+  <h1>✅ Resultado del Pago</h1>
+
+  <p id="mensaje">Cargando datos de la transacción...</p>
+
+  <script>
+    async function obtenerEstadoTransaccion(idTransaccion) {
+      const url = `https://sandbox.wompi.co/v1/transactions/${idTransaccion}`;
+
+      try {
+        const respuesta = await fetch(url);
+        const data = await respuesta.json();
+
+        const estado = data.data.status;
+        const monto = data.data.amount_in_cents / 100;
+        const moneda = data.data.currency;
+
+        document.getElementById('mensaje').innerHTML = `
+          <strong>Estado del pago:</strong> ${estado}<br/>
+          <strong>Monto:</strong> $${monto.toLocaleString()} ${moneda}<br/>
+          <strong>ID transacción:</strong> ${idTransaccion}
+        `;
+      } catch (error) {
+        document.getElementById('mensaje').textContent = "❌ Error consultando la transacción.";
+        console.error(error);
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTransaccion = urlParams.get('id');
+
+    if (idTransaccion) {
+      obtenerEstadoTransaccion(idTransaccion);
+    } else {
+      document.getElementById('mensaje').textContent = "❌ No se encontró el ID de transacción en la URL.";
+    }
+  </script>
+</body>
+</html>
