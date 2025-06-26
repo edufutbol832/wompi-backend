@@ -1,35 +1,30 @@
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
-import hashlib
-import os
+from flask import Flask, request, jsonify
 
-app = Flask(__name__, static_url_path='', static_folder='.')
-CORS(app)
+app = Flask(__name__)
 
-SECRET = "test_integrity_CxvWC5XqHUC8eownzkyCMKjfOujwVmqk"
+# Ejemplo de datos simulados de pagos, en producción debes consultar Wompi o tu base de datos
+pagos_simulados = {
+    "test123": {"status": "APPROVED"},
+    "test456": {"status": "DECLINED"},
+    # agrega más para pruebas si quieres
+}
 
-@app.route('/')
-def index():
-    return 'Servidor Flask activo'
+@app.route('/check-payment', methods=['GET'])
+def check_payment():
+    referencia = request.args.get('id')
+    if not referencia:
+        return jsonify({"error": "Falta el parámetro id"}), 400
 
-@app.route('/generate-signature', methods=['POST'])
-def generate_signature():
-    data = request.get_json()
-    amount = data.get('amount_in_cents')
-    currency = data.get('currency')
-    reference = data.get('reference')
+    # Aquí deberías consultar la API de Wompi o base de datos para obtener el estado real del pago
+    # Por ahora, usamos datos simulados para prueba
+    estado_pago = pagos_simulados.get(referencia)
 
-    if not amount or not currency or not reference:
-        return jsonify({"error": "Faltan parámetros"}), 400
+    if estado_pago:
+        return jsonify(estado_pago)
+    else:
+        # Si no se encuentra la referencia, devolvemos estado no encontrado
+        return jsonify({"status": "NOT_FOUND"}), 404
 
-    cadena = f"{reference}{amount}{currency}{SECRET}"
-    firma = hashlib.sha256(cadena.encode('utf-8')).hexdigest()
-    return jsonify({"signature": firma})
-
-# ✅ Servir archivos HTML estáticos como respuesta.html
-@app.route('/<path:filename>')
-def static_files(filename):
-    return send_from_directory('.', filename)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

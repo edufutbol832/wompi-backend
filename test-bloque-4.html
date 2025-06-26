@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba Wompi - Bloque 4</title>
+</head>
+<body>
+  <h2>Generar Firma SHA-256 (Bloque 4)</h2>
+  <p>Abre la consola (F12) para ver la firma generada.</p>
+
+  <!-- Script de Wompi (Bloque 2) -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
+
+  <!-- Variables (Bloque 3) -->
+  <script>
+    const publicKey = "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG";
+    const amountInCents = 150000;
+    const currency = "COP";
+    const reference = "prueba-integracion-001";
+    const integritySecret = "test_integrity_CxvWC5XqHUC8eownzkyCMKjfOujwVmqk";
+
+    const stringToSign = `${amountInCents}${currency}${reference}${integritySecret}`;
+  </script>
+
+  <!-- Bloque 4: Función para generar firma SHA-256 -->
+  <script>
+    async function generateSignature(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+      const hashHex = Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+      return hashHex;
+    }
+
+    // Generar y mostrar la firma en consola
+    (async () => {
+      const signature = await generateSignature(stringToSign);
+      console.log("✅ Firma SHA-256 generada:", signature);
+    })();
+  </script>
+</body>
+</html>

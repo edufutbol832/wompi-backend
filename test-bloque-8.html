@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prueba Wompi sin SDK</title>
+</head>
+<body>
+  <h2>Pago de prueba Wompi (sin usar SDK)</h2>
+  <button onclick="iniciarCheckout()">Pagar con Wompi</button>
+
+  <script>
+    const publicKey = "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG";
+    const integrityKey = "test_integrity_CxvWC5XqHUC8eownzkyCMKjfOujwVmqk"; // Usa tu clave real
+
+    async function sha256(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      const hash = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hash))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    async function iniciarCheckout() {
+      const amountInCents = 150000;
+      const currency = "COP";
+      const reference = "prueba-integracion-001";
+      const redirectUrl = "https://wompi-backend-zodk.onrender.com/gracias";
+
+      const cadenaFirma = `${amountInCents}${currency}${reference}${integrityKey}`;
+      const signature = await sha256(cadenaFirma);
+      console.log("✅ Firma generada:", signature);
+
+      const checkoutUrl = `https://checkout.wompi.co/p/?mode=widget&public-key=${publicKey}&currency=${currency}&amount-in-cents=${amountInCents}&reference=${reference}&redirect-url=${redirectUrl}&signature_integrity=${signature}`;
+
+      window.open(checkoutUrl, "_blank");
+    }
+  </script>
+</body>
+</html>

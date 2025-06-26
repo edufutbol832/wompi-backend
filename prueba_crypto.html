@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba de crypto.subtle</title>
+</head>
+<body>
+  <h1>Verificando soporte de crypto.subtle</h1>
+  <script>
+    if (window.crypto && window.crypto.subtle) {
+      document.body.innerHTML += "<p style='color:green;'>✅ crypto.subtle está disponible.</p>";
+    } else {
+      document.body.innerHTML += "<p style='color:red;'>❌ crypto.subtle NO está disponible.</p>";
+    }
+  </script>
+</body>
+</html>

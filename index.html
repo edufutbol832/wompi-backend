@@ -2,38 +2,61 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Pago con Wompi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pago con Wompi - Referencia dinámica</title>
 </head>
 <body>
-  <h2>Botón de pago Wompi</h2>
-  <button id="botonPagoWompi">Pagar con Wompi</button>
+  <h1>💳 Botón de pago con Wompi</h1>
 
-  <script src="https://checkout.wompi.co/widget.js"></script>
+  <div id="wompi-container">
+    <p>Generando referencia y firma...</p>
+  </div>
+
   <script>
-    console.log("Script cargado y ejecutándose");
+    // 🔄 Paso 1: Generar referencia única
+    const referencia = "edupago-" + Date.now();
+    console.log("Referencia generada:", referencia);
 
-    const checkout = new WidgetCheckout({
-      publicKey: "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG", // ← Tu clave pública sandbox de Wompi
+    // 🔄 Paso 2: Llamar a tu backend para obtener la firma
+    const datos = {
+      amount_in_cents: 150000,
       currency: "COP",
-      amountInCents: 150000, // $1.500 COP
-      reference: "prueba-integracion-001",
-      redirectUrl: "https://wompi-backend-zodk.onrender.com/gracias", // ← URL a donde se redirige después del pago
-      customerData: {
-        email: "cliente@ejemplo.com"
-      }
-    });
+      reference: referencia
+    };
 
-    document.getElementById("botonPagoWompi").addEventListener("click", () => {
-      console.log("Botón clickeado");
-      checkout.open(
-        function (result) {
-          console.log("✅ Pago exitoso:", result);
-        },
-        function (error) {
-          console.error("❌ Error en el pago:", error);
-        }
-      );
+    fetch("https://wompi-backend-zodk.onrender.com/generate-signature", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(datos)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.signature) throw new Error("Firma no recibida");
+
+      // 🔄 Paso 3: Mostrar el botón de pago con datos completos
+      const script = document.createElement("script");
+      script.src = "https://checkout.wompi.co/widget.js";
+      script.setAttribute("data-render", "button");
+      script.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
+      script.setAttribute("data-currency", "COP");
+      script.setAttribute("data-amount-in-cents", "150000");
+      script.setAttribute("data-reference", referencia);
+      script.setAttribute("data-signature:integrity", data.signature);
+      script.setAttribute("data-redirect-url", "https://wompi-backend-zodk.onrender.com/respuesta.html");
+
+      const container = document.getElementById("wompi-container");
+      container.innerHTML = ""; // Limpiar mensaje inicial
+      container.appendChild(script);
+    })
+    .catch(error => {
+      document.getElementById("wompi-container").innerHTML = `<p style="color:red;">❌ Error al generar firma o referencia.</p><p>${error.message}</p>`;
+      console.error("Error:", error);
     });
   </script>
+
+  <hr/>
+  <p>🧪 <strong>Modo Sandbox:</strong> Puedes hacer múltiples pruebas sin errores de "referencia duplicada".</p>
 </body>
 </html>

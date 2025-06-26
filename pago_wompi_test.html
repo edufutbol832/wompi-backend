@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prueba de Firma Wompi</title>
+</head>
+<body>
+  <h2>Generación de firma SHA-256</h2>
+  <p>Haz clic en el botón para generar la firma:</p>
+  <button id="generarFirma">Generar firma</button>
+  <p id="resultadoFirma" style="font-family: monospace; color: green;"></p>
+
+  <script>
+    const amountInCents = 150000;
+    const currency = "COP";
+    const reference = "prueba-integracion-001";
+    const integritySecret = "test_integrity_CxvWC5XqHUC8eownzkyCMKjfOujwVmqk";
+
+    const stringToSign = `${amountInCents}${currency}${reference}${integritySecret}`;
+    console.log("🔍 String a firmar:", stringToSign);
+
+    async function generateSignature(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    document.getElementById("generarFirma").addEventListener("click", async () => {
+      const signature = await generateSignature(stringToSign);
+      console.log("✅ Firma generada:", signature);
+      document.getElementById("resultadoFirma").textContent = signature;
+    });
+  </script>
+</body>
+</html>

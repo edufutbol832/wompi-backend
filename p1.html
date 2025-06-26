@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prueba SDK Wompi - carga correcta</title>
+  <!-- SDK oficial correcto -->
+  <script src="https://checkout.wompi.co/widget/wompi-checkout.js"></script>
+</head>
+<body>
+  <h2>Prueba SDK Wompi - carga correcta</h2>
+  <button id="btnInit">Iniciar Pago</button>
+
+  <script>
+    const publicKey = "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.getElementById("btnInit");
+
+      btn.addEventListener("click", () => {
+        if (typeof Wompi === "undefined") {
+          alert("SDK de Wompi NO está cargado aún");
+          return;
+        }
+
+        window.$wompi = new Wompi(publicKey);
+
+        window.$wompi.initialize().then(() => {
+          alert("SDK inicializado correctamente con la clave pública");
+        }).catch((e) => {
+          alert("Error inicializando SDK: " + e.message);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

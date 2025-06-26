@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba Wompi - Bloque 5</title>
+</head>
+<body>
+  <h2>Botón y Firma (Bloque 5)</h2>
+  <button id="pagar">Pagar con Wompi</button>
+  <p>Haz clic en el botón y revisa la consola (F12).</p>
+
+  <!-- Script de Wompi -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
+
+  <!-- Variables -->
+  <script>
+    const publicKey = "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG";
+    const amountInCents = 150000;
+    const currency = "COP";
+    const reference = "prueba-integracion-001";
+    const integritySecret = "test_integrity_CxvWC5XqHUC8eownzkyCMKjfOujwVmqk";
+
+    const stringToSign = `${amountInCents}${currency}${reference}${integritySecret}`;
+  </script>
+
+  <!-- Generar firma y mostrar al hacer clic -->
+  <script>
+    async function generateSignature(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+      const hashHex = Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+      return hashHex;
+    }
+
+    document.getElementById("pagar").addEventListener("click", async () => {
+      const signature = await generateSignature(stringToSign);
+      console.log("✅ Firma generada al hacer clic:", signature);
+    });
+  </script>
+</body>
+</html>

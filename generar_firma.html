@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generador de Firma SHA-256</title>
+</head>
+<body>
+  <h2>Generador de firma SHA-256 para Wompi</h2>
+  <button id="generar">Generar Firma</button>
+  <p id="resultado" style="font-family: monospace; color: green;"></p>
+
+  <script>
+    // 👇 Pega tu stringToSign completo aquí
+    const stringToSign = "150000COPprueba-integracion-001prod_integrity_vGzFQ729AV62mNMXFFtUQDRVUHOJ5kvy";
+
+    async function generateSignature(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    document.getElementById("generar").addEventListener("click", async () => {
+      const signature = await generateSignature(stringToSign);
+      console.log("✅ Firma generada:", signature);
+      document.getElementById("resultado").textContent = signature;
+    });
+  </script>
+</body>
+</html>

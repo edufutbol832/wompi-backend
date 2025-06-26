@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba Wompi - Bloques 1, 2 y 3</title>
+</head>
+<body>
+  <h2>Pago con Wompi (Bloques 1, 2 y 3)</h2>
+  <p>Abre la consola (F12) para ver los valores.</p>
+
+  <!-- Bloque 2: Script de Wompi -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
+
+  <!-- Bloque 3: Variables de configuración -->
+  <script>
+    const publicKey = "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG";
+    const amountInCents = 150000;
+    const currency = "COP";
+    const reference = "prueba-integracion-001";
+
+    const integritySecret = "test_integrity_CxvWC5XqHUC8eownzkyCMKjfOujwVmqk";
+
+    const stringToSign = `${amountInCents}${currency}${reference}${integritySecret}`;
+
+    // Mostrar en consola para verificar
+    console.log("🔍 Clave pública:", publicKey);
+    console.log("🔍 Monto en centavos:", amountInCents);
+    console.log("🔍 Moneda:", currency);
+    console.log("🔍 Referencia:", reference);
+    console.log("🔍 Clave de integridad:", integritySecret);
+    console.log("🔍 Cadena para firmar:", stringToSign);
+  </script>
+</body>
+</html>
