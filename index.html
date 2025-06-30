@@ -1,62 +1,23 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pago con Wompi - Referencia dinámica</title>
-</head>
-<body>
-  <h1>💳 Botón de pago con Wompi</h1>
+const express = require('express');
+const path = require('path');
 
-  <div id="wompi-container">
-    <p>Generando referencia y firma...</p>
-  </div>
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-  <script>
-    // 🔄 Paso 1: Generar referencia única
-    const referencia = "edupago-" + Date.now();
-    console.log("Referencia generada:", referencia);
+// Servir los archivos HTML desde la carpeta /public
+app.use(express.static(path.join(__dirname, 'public')));
 
-    // 🔄 Paso 2: Llamar a tu backend para obtener la firma
-    const datos = {
-      amount_in_cents: 150000,
-      currency: "COP",
-      reference: referencia
-    };
+// Captura el parámetro id que Wompi envía tras redirección
+app.get('/redirect', (req, res) => {
+  const transactionId = req.query.id;
+  if (transactionId) {
+    res.redirect(`/respuesta.html?id=${transactionId}`);
+  } else {
+    res.redirect('/respuesta.html');
+  }
+});
 
-    fetch("https://wompi-backend-zodk.onrender.com/generate-signature", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(datos)
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (!data.signature) throw new Error("Firma no recibida");
+app.listen(PORT, () => {
+  console.log(`✅ Servidor ejecutándose en http://localhost:${PORT}`);
+});
 
-      // 🔄 Paso 3: Mostrar el botón de pago con datos completos
-      const script = document.createElement("script");
-      script.src = "https://checkout.wompi.co/widget.js";
-      script.setAttribute("data-render", "button");
-      script.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
-      script.setAttribute("data-currency", "COP");
-      script.setAttribute("data-amount-in-cents", "150000");
-      script.setAttribute("data-reference", referencia);
-      script.setAttribute("data-signature:integrity", data.signature);
-      script.setAttribute("data-redirect-url", "https://wompi-backend-zodk.onrender.com/respuesta.html");
-
-      const container = document.getElementById("wompi-container");
-      container.innerHTML = ""; // Limpiar mensaje inicial
-      container.appendChild(script);
-    })
-    .catch(error => {
-      document.getElementById("wompi-container").innerHTML = `<p style="color:red;">❌ Error al generar firma o referencia.</p><p>${error.message}</p>`;
-      console.error("Error:", error);
-    });
-  </script>
-
-  <hr/>
-  <p>🧪 <strong>Modo Sandbox:</strong> Puedes hacer múltiples pruebas sin errores de "referencia duplicada".</p>
-</body>
-</html>

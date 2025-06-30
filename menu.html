@@ -121,7 +121,9 @@
         script.setAttribute("data-amount-in-cents", "150000");
         script.setAttribute("data-reference", referencia);
         script.setAttribute("data-signature:integrity", data.signature);
-        script.setAttribute("data-redirect-url", "https://wompi-backend-zodk.onrender.com/respuesta.html");
+
+        // Cambiar redirección para que pase por el backend local
+        script.setAttribute("data-redirect-url", "http://localhost:3000/redirect");
 
         const container = document.getElementById("wompi-container");
         container.innerHTML = "";
@@ -136,3 +138,4 @@
 
 </body>
 </html>
+
