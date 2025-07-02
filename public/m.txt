@@ -102,7 +102,7 @@
         reference: referencia
       };
 
-      fetch("https://wompi-backend-nuevo.onrender.com/generate-signature", {
+      fetch("http://localhost:10000/generate-signature", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -113,6 +113,9 @@
       .then(data => {
         if (!data.signature) throw new Error("Firma no recibida");
 
+        const container = document.getElementById("wompi-container");
+        container.innerHTML = ""; // Limpiar contenedor para insertar el botón
+
         const script = document.createElement("script");
         script.src = "https://checkout.wompi.co/widget.js";
         script.setAttribute("data-render", "button");
@@ -120,12 +123,26 @@
         script.setAttribute("data-currency", "COP");
         script.setAttribute("data-amount-in-cents", "150000");
         script.setAttribute("data-reference", referencia);
-        script.setAttribute("data-signature:integrity", data.signature);
+        script.setAttribute("data-signature-integrity", data.signature);
+
+        // URL a la que redirige después de pago (opcional)
         script.setAttribute("data-redirect-url", "http://localhost:3000/redirect");
 
-        const container = document.getElementById("wompi-container");
-        container.innerHTML = "";
         container.appendChild(script);
+
+        // Escuchar evento para cuando termine el pago (uso de Wompi widget 'onComplete')
+        window.addEventListener('message', function(event) {
+          if(event.origin !== 'https://checkout.wompi.co') return;
+          if(event.data && event.data.eventName === 'wompi.checkout.finished' && event.data.payload) {
+            if(event.data.payload.success) {
+              alert('Pago exitoso! Volviendo al menú principal.');
+              volverAlMenu();
+            } else {
+              alert('Pago cancelado o fallido.');
+              volverAlMenu();
+            }
+          }
+        });
       })
       .catch(error => {
         document.getElementById("wompi-container").innerHTML = `<p style="color:red;">❌ Error al generar firma.</p><p>${error.message}</p>`;

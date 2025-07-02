@@ -1,24 +1,24 @@
 {
-  "name": "wompi-backend",
+  "name": "wompi-backend-nuevo",
   "version": "1.0.0",
+  "description": "Backend para generar firma simulada Wompi",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
+  "keywords": [],
+  "author": "edufutbol832",
+  "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/edufutbol832/edubacken.git"
+    "url": "https://github.com/edufutbol832/wompi-backend-nuevo.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/edufutbol832/edubacken/issues"
+    "url": "https://github.com/edufutbol832/wompi-backend-nuevo/issues"
   },
-  "homepage": "https://github.com/edufutbol832/edubacken#readme",
-  "description": "",
+  "homepage": "https://github.com/edufutbol832/wompi-backend-nuevo#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^5.1.0"
   }
 }
