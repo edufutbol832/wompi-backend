@@ -3,11 +3,15 @@ const crypto = require('crypto');
 const cors = require('cors');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// Reemplaza esto con tu clave privada real de Wompi
-const PRIVATE_KEY = 'tu_clave_privada_aqui';
+// Servir archivos estáticos desde la carpeta 'public'
+app.use(express.static('public'));
+
+// Tu clave privada Wompi - ¡recuerda reemplazarla por tu clave real!
+const PRIVATE_KEY = 'prv_test_NTN6kv4XuC5i7Y3bWFRHVlQkBNRhIqvc';
 
 app.post('/generate-signature', (req, res) => {
   const { amount_in_cents, currency, reference } = req.body;
@@ -16,13 +20,17 @@ app.post('/generate-signature', (req, res) => {
     return res.status(400).json({ error: 'Faltan parámetros necesarios' });
   }
 
-  // La fórmula para la firma: concatenar los valores separados por '|'
+  // Concatenar datos con separador '|'
   const data = `${amount_in_cents}|${currency}|${reference}|${PRIVATE_KEY}`;
 
-  // Crear el hash SHA256 de esa cadena
+  // Crear hash SHA256
   const signature = crypto.createHash('sha256').update(data).digest('hex');
 
-  // Devolver la firma al cliente
+  // Log para verificar datos y firma generada
+  console.log('✅ Firma generada:', signature);
+  console.log('Datos recibidos para firma:', req.body);
+
+  // Enviar firma al cliente
   res.json({ signature });
 });
 

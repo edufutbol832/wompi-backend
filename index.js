@@ -1,40 +1,36 @@
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
+const express = require('express');
+const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
-// Configurar CORS para permitir solo tu frontend
-app.use(cors({
-  origin: "https://wompi-backend-nuevo.onrender.com",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// 🔐 Llave privada Wompi Sandbox directamente en el código
+const PRIVATE_KEY = 'prv_test_v3_EEdDhvGkknF1i72Qh4NR4VKPmt6WUzaz'; // ← Esta es la llave privada de sandbox (real)
 
-app.use(bodyParser.json());
-app.use(express.static("public"));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta para generar firma simulada
-app.post("/generate-signature", (req, res) => {
+// 🔁 Generar firma para botón de pago
+app.post('/generate-signature', (req, res) => {
   const { amount_in_cents, currency, reference } = req.body;
 
   if (!amount_in_cents || !currency || !reference) {
-    return res.status(400).json({ error: "Datos incompletos" });
+    return res.status(400).json({ error: 'Faltan datos para la firma' });
   }
 
-  // Aquí simulas la firma (en producción usarías tu clave privada y HMAC)
-  const firmaSimulada = "firma_simulada_para_prueba";
+  const dataToSign = `${amount_in_cents}|${currency}|${reference}|${PRIVATE_KEY}`;
+  const signature = crypto.createHash('sha256').update(dataToSign).digest('hex');
 
-  res.json({ signature: firmaSimulada });
+  res.json({ signature });
 });
 
-// Redirección opcional después del pago
-app.get("/redirect", (req, res) => {
-  res.send("<h2>✅ ¡Pago procesado! Gracias por usar Wompi.</h2><a href='/menu.html'>Volver al menú</a>");
+// 🔁 Redirección luego del pago
+app.get('/redirect', (req, res) => {
+  const transactionId = req.query.id;
+  res.redirect(`/respuesta.html?id=${transactionId}`);
 });
 
-// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`✅ Servidor ejecutándose en http://localhost:${PORT}`);
+  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });

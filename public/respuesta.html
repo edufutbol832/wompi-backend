@@ -1,98 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Resultado del Pago</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Respuesta del Pago</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f3f3f3;
-      padding: 30px;
-    }
-    .container {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .status {
-      font-size: 24px;
-      margin-bottom: 15px;
-    }
-    .approved { color: green; }
-    .declined { color: red; }
-    .info {
-      font-size: 18px;
-      margin-top: 10px;
-    }
-    .return-button {
-      margin-top: 30px;
-      display: none;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; background: #f9f9f9; }
+    .resultado { background: white; padding: 20px; border-radius: 8px; display: inline-block; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>✅ Resultado del Pago</h1>
-    <div id="resultado" class="status">Cargando resultado...</div>
-    <div class="info" id="detalles"></div>
-    <div class="return-button" id="retornarBtn">
-      <button onclick="window.location.href='menu.html'">Retornar al Menú</button>
-    </div>
+  <div class="resultado">
+    <h1>Resultado de la Transacción</h1>
+    <p id="mensaje">Cargando...</p>
+    <button onclick="location.href='menu.html'">Volver al menú</button>
   </div>
 
   <script>
-    async function obtenerResultadoPago() {
-      const params = new URLSearchParams(window.location.search);
-      const transactionId = params.get("id");
-      const btn = document.getElementById("retornarBtn");
+    // Obtener id de transacción de la URL
+    const params = new URLSearchParams(window.location.search);
+    const transactionId = params.get('id');
 
-      if (!transactionId) {
-        document.getElementById("resultado").innerHTML = "❌ No se encontró el ID de transacción en la URL.";
-        btn.style.display = "block";
-        return;
-      }
-
-      try {
-        const response = await fetch(`https://sandbox.wompi.co/v1/transactions/${transactionId}`);
-        const data = await response.json();
-
-        if (data && data.data) {
-          const estado = data.data.status;
-          const referencia = data.data.reference;
-          const moneda = data.data.currency;
-          const monto = (data.data.amount_in_cents / 100).toFixed(2);
-
-          let mensaje = estado === "APPROVED"
-            ? `<span class="approved">Estado del pago: ${estado}</span>`
-            : `<span class="declined">Estado del pago: ${estado}</span>`;
-
-          document.getElementById("resultado").innerHTML = `✅ Resultado del Pago<br>${mensaje}`;
-          document.getElementById("detalles").innerHTML = `
-            💳 Referencia: ${referencia}<br>
-            💰 Monto: ${monto} ${moneda}
-          `;
-        } else {
-          document.getElementById("resultado").innerHTML = "⚠️ No se pudo obtener la información del pago.";
-        }
-      } catch (error) {
-        console.error(error);
-        document.getElementById("resultado").innerHTML = "⚠️ Error al consultar el estado del pago.";
-      }
-
-      // Mostrar botón después de cargar resultado
-      btn.style.display = "block";
+    if (!transactionId) {
+      document.getElementById('mensaje').textContent = 'ID de transacción no recibido.';
+    } else {
+      // Aquí podrías hacer fetch a tu backend para obtener más info del pago
+      // Por simplicidad solo mostramos el ID
+      document.getElementById('mensaje').textContent = `ID de la transacción: ${transactionId}`;
     }
-
-    obtenerResultadoPago();
   </script>
 </body>
 </html>

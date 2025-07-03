@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Redireccionando...</title>
+  <script>
+    // Obtener el parámetro id de la URL y redirigir con él
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+      window.location.href = `respuesta.html?id=${id}`;
+    } else {
+      // Si no hay id, ir al menú o mostrar mensaje
+      window.location.href = 'menu.html';
+    }
+  </script>
+</head>
+<body>
+  <p>Redireccionando al resultado del pago...</p>
+</body>
+</html>

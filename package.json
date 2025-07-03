@@ -1,24 +1,15 @@
 {
-  "name": "wompi-backend-nuevo",
+  "name": "wompi-backend",
   "version": "1.0.0",
-  "description": "Backend para generar firma simulada Wompi",
+  "description": "Backend para pagos Wompi (modo Sandbox) con archivos públicos en Express",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "edufutbol832",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/edufutbol832/wompi-backend-nuevo.git"
-  },
-  "bugs": {
-    "url": "https://github.com/edufutbol832/wompi-backend-nuevo/issues"
-  },
-  "homepage": "https://github.com/edufutbol832/wompi-backend-nuevo#readme",
+  "keywords": ["wompi", "pagos", "express", "sandbox", "web", "nodejs"],
+  "author": "TuNombre",
+  "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^4.18.2"
   }
 }
