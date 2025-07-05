@@ -1,15 +1,16 @@
 {
   "name": "wompi-backend",
   "version": "1.0.0",
-  "description": "Backend para pagos Wompi (modo Sandbox) con archivos públicos en Express",
+  "description": "Backend para generar firma y manejar redirecciones con Wompi",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": ["wompi", "pagos", "express", "sandbox", "web", "nodejs"],
-  "author": "TuNombre",
-  "license": "MIT",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.0.1",
     "express": "^4.18.2"
   }
 }
