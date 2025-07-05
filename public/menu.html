@@ -30,6 +30,7 @@
 </head>
 <body>
 
+  <!-- 🧭 Menú Principal -->
   <div id="menuPrincipal" class="menu-principal visible">
     <h1>📋 Menú Principal</h1>
     <button onclick="mostrarModulo('instructivo')">Instructivo</button>
@@ -38,6 +39,8 @@
     <button onclick="mostrarModulo('pago')">Pago</button>
     <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
   </div>
+
+  <!-- 🧩 Módulos -->
 
   <div id="moduloInstructivo" class="modulo">
     <h2>📘 Módulo en proceso: Instructivo</h2>
@@ -57,6 +60,7 @@
   <div id="moduloPago" class="modulo">
     <h2>💳 Módulo de Pago Wompi (Sandbox)</h2>
     <div id="wompi-container"><p>Generando referencia y firma...</p></div>
+    <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
   <div id="moduloSuscripcion" class="modulo">
@@ -64,6 +68,7 @@
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
+  <!-- 🔧 Script de navegación y pago -->
   <script>
     function mostrarModulo(modulo) {
       document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
@@ -104,9 +109,7 @@
 
       fetch("https://wompi-backend-nuevo.onrender.com/generate-signature", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos)
       })
       .then(response => response.json())
@@ -121,12 +124,10 @@
         script.setAttribute("data-amount-in-cents", "150000");
         script.setAttribute("data-reference", referencia);
         script.setAttribute("data-signature:integrity", data.signature);
-
-        // ✅ Redirección corregida al backend actual en producción
-        script.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/redirect");
+        script.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/respuesta.html");
 
         const container = document.getElementById("wompi-container");
-        container.innerHTML = "";
+        container.innerHTML = ""; // Limpiar
         container.appendChild(script);
       })
       .catch(error => {
@@ -135,6 +136,5 @@
       });
     }
   </script>
-
 </body>
 </html>
