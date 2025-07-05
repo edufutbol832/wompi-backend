@@ -1,3 +1,6 @@
+// index.js
+
+require('dotenv').config(); // ✅ Carga las variables desde .env
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -5,18 +8,19 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Carga segura de la llave privada desde variables de entorno
+// ✅ Obtiene la llave privada desde .env
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 if (!PRIVATE_KEY) {
-  console.error('❌ ERROR: La variable PRIVATE_KEY no está definida en el entorno.');
-  process.exit(1); // Detiene la app si no hay clave configurada
+  console.error('❌ ERROR: La variable PRIVATE_KEY no está definida.');
+  process.exit(1);
 }
 
+// ✅ Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🔁 Endpoint para generar firma SHA-256
+// ✅ Endpoint para generar firma
 app.post('/generate-signature', (req, res) => {
   const { amount_in_cents, currency, reference } = req.body;
 
@@ -24,18 +28,25 @@ app.post('/generate-signature', (req, res) => {
     return res.status(400).json({ error: 'Faltan datos para generar la firma' });
   }
 
-  const dataToSign = `${amount_in_cents}|${currency}|${reference}|${PRIVATE_KEY}`;
-  const signature = crypto.createHash('sha256').update(dataToSign).digest('hex');
+  // 🔐 Firma usando HMAC-SHA256 como exige Wompi
+  const signature = crypto
+    .createHmac('sha256', PRIVATE_KEY)
+    .update(`${amount_in_cents}|${currency}|${reference}`)
+    .digest('hex');
 
   res.json({ signature });
 });
 
-// 🔁 Redirección al finalizar el pago
+// ✅ Redireccionar con ID de transacción
 app.get('/redirect', (req, res) => {
   const transactionId = req.query.id;
+  if (!transactionId) {
+    return res.redirect('/menu.html');
+  }
   res.redirect(`/respuesta.html?id=${transactionId}`);
 });
 
+// ✅ Iniciar servidor
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
