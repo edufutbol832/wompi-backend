@@ -1,11 +1,15 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
+const cors = require('cors');  // <-- Importa cors
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Obtener llave privada desde variables de entorno (Render)
+// Middleware para permitir CORS en todas las rutas
+app.use(cors());
+
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 if (!PRIVATE_KEY) {
@@ -13,21 +17,9 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-// ✅ Middleware para permitir CORS (importante para el menú)
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  next();
-});
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Endpoint para generar firma
 app.post('/generate-signature', (req, res) => {
   const { amount_in_cents, currency, reference } = req.body;
 
@@ -43,7 +35,6 @@ app.post('/generate-signature', (req, res) => {
   res.json({ signature });
 });
 
-// ✅ Redireccionar con ID de transacción
 app.get('/redirect', (req, res) => {
   const transactionId = req.query.id;
   if (!transactionId) {
@@ -52,7 +43,6 @@ app.get('/redirect', (req, res) => {
   res.redirect(`/respuesta.html?id=${transactionId}`);
 });
 
-// ✅ Iniciar servidor
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
