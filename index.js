@@ -1,6 +1,3 @@
-// index.js
-
-require('dotenv').config(); // ✅ Carga las variables desde .env
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -8,7 +5,7 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Obtiene la llave privada desde .env
+// ✅ Obtener llave privada desde variables de entorno (Render)
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 if (!PRIVATE_KEY) {
@@ -16,7 +13,17 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-// ✅ Middlewares
+// ✅ Middleware para permitir CORS (importante para el menú)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -28,7 +35,6 @@ app.post('/generate-signature', (req, res) => {
     return res.status(400).json({ error: 'Faltan datos para generar la firma' });
   }
 
-  // 🔐 Firma usando HMAC-SHA256 como exige Wompi
   const signature = crypto
     .createHmac('sha256', PRIVATE_KEY)
     .update(`${amount_in_cents}|${currency}|${reference}`)
