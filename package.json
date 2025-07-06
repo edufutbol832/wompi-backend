@@ -1,16 +1,21 @@
 {
   "name": "wompi-backend",
   "version": "1.0.0",
-  "description": "Backend para generar firma y manejar redirecciones con Wompi",
+  "description": "Backend Node.js para generar firma con Wompi",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Eduardo Tirado Colmenares",
+  "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
