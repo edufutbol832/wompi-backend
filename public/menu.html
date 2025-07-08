@@ -67,28 +67,14 @@
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
-  <!-- 🔧 Script de navegación y carga de Wompi -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
+
   <script>
     function mostrarModulo(modulo) {
       document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
-
-      switch (modulo) {
-        case 'instructivo':
-          document.getElementById('moduloInstructivo').classList.add('visible');
-          break;
-        case 'simulacion':
-          document.getElementById('moduloSimulacion').classList.add('visible');
-          break;
-        case 'lista':
-          document.getElementById('moduloLista').classList.add('visible');
-          break;
-        case 'pago':
-          document.getElementById('moduloPago').classList.add('visible');
-          cargarBotonWompi();
-          break;
-        case 'suscripcion':
-          document.getElementById('moduloSuscripcion').classList.add('visible');
-          break;
+      document.getElementById('modulo' + modulo.charAt(0).toUpperCase() + modulo.slice(1)).classList.add('visible');
+      if (modulo === 'pago') {
+        cargarBotonWompi();
       }
     }
 
@@ -111,23 +97,27 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos)
       })
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
         if (!data.signature) throw new Error("Firma no recibida");
 
-        const script = document.createElement("script");
-        script.src = "https://checkout.wompi.co/widget.js";
-        script.setAttribute("data-render", "button");
-        script.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
-        script.setAttribute("data-currency", "COP");
-        script.setAttribute("data-amount-in-cents", "150000");
-        script.setAttribute("data-reference", data.reference);
-        script.setAttribute("data-signature-integrity", data.signature);
-        script.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/respuesta.html");
-
         const container = document.getElementById("wompi-container");
-        container.innerHTML = "";
-        container.appendChild(script);
+        container.innerHTML = ""; // Limpiar
+
+        const div = document.createElement("div");
+        div.id = "wompi-button";
+        div.setAttribute("data-render", "button");
+        div.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
+        div.setAttribute("data-currency", "COP");
+        div.setAttribute("data-amount-in-cents", "150000");
+        div.setAttribute("data-reference", data.reference);
+        div.setAttribute("data-signature-integrity", data.signature);
+        div.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/redirect");
+
+        container.appendChild(div);
+        if (window.$wompi && window.$wompi.render) {
+          window.$wompi.render();
+        }
       })
       .catch(error => {
         document.getElementById("wompi-container").innerHTML = `<p style="color:red;">❌ Error al generar firma.</p><p>${error.message}</p>`;
