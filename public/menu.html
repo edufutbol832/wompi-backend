@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Menú Principal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Menú Principal - Botón Wompi Simple</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,18 +24,13 @@
       font-size: 16px;
       cursor: pointer;
     }
-    #wompi-container {
-      margin-top: 30px;
-    }
-    #loader {
-      font-style: italic;
-      color: #555;
-    }
   </style>
+  <!-- Carga el SDK de Wompi -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
 </head>
 <body>
 
-  <!-- 🧭 Menú Principal -->
+  <!-- Menú Principal -->
   <div id="menuPrincipal" class="menu-principal visible">
     <h1>📋 Menú Principal</h1>
     <button onclick="mostrarModulo('instructivo')">Instructivo</button>
@@ -44,7 +40,7 @@
     <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
   </div>
 
-  <!-- 🧩 Módulos -->
+  <!-- Módulos -->
   <div id="moduloInstructivo" class="modulo">
     <h2>📘 Módulo en proceso: Instructivo</h2>
     <button onclick="volverAlMenu()">Retornar</button>
@@ -61,9 +57,18 @@
   </div>
 
   <div id="moduloPago" class="modulo">
-    <h2>💳 Módulo de Pago Wompi (Sandbox)</h2>
+    <h2>💳 Módulo de Pago Wompi (Prueba Simple)</h2>
     <div id="wompi-container">
-      <p id="loader">Generando referencia y firma...</p>
+      <!-- Botón simple de pago Wompi -->
+      <button
+        data-render="button"
+        data-public-key="pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"
+        data-currency="COP"
+        data-amount-in-cents="150000"
+        data-reference="edupago-123456789"
+        data-redirect-url="https://wompi-backend-nuevo.onrender.com/respuesta.html">
+        Pagar con Wompi (Prueba Simple)
+      </button>
     </div>
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
@@ -73,11 +78,9 @@
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
-  <!-- 🔧 Script de navegación y carga de Wompi -->
   <script>
     function mostrarModulo(modulo) {
       document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
-
       switch (modulo) {
         case 'instructivo':
           document.getElementById('moduloInstructivo').classList.add('visible');
@@ -90,7 +93,6 @@
           break;
         case 'pago':
           document.getElementById('moduloPago').classList.add('visible');
-          cargarBotonWompi();
           break;
         case 'suscripcion':
           document.getElementById('moduloSuscripcion').classList.add('visible');
@@ -101,47 +103,8 @@
     function volverAlMenu() {
       document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
       document.getElementById('menuPrincipal').classList.add('visible');
-      const wompiContainer = document.getElementById("wompi-container");
-      wompiContainer.innerHTML = '<p id="loader">Generando referencia y firma...</p>';
-    }
-
-    function cargarBotonWompi() {
-      const referencia = "edupago-" + Date.now();
-      const datos = {
-        amount_in_cents: 150000,
-        currency: "COP",
-        reference: referencia
-      };
-
-      fetch("/generate-signature", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos)
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (!data.signature) throw new Error("Firma no recibida");
-
-        const script = document.createElement("script");
-        script.src = "https://checkout.wompi.co/widget.js";
-        script.setAttribute("data-render", "button");
-        script.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
-        script.setAttribute("data-currency", "COP");
-        script.setAttribute("data-amount-in-cents", "150000");
-        script.setAttribute("data-reference", referencia);
-        script.setAttribute("data-signature-integrity", data.signature);
-        script.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/respuesta.html");
-
-        const container = document.getElementById("wompi-container");
-        container.innerHTML = ""; // Limpiar contenido previo
-        container.appendChild(script);
-      })
-      .catch(error => {
-        const container = document.getElementById("wompi-container");
-        container.innerHTML = `<p style="color:red;">❌ Error al generar firma.</p><p>${error.message}</p>`;
-        console.error("Error:", error);
-      });
     }
   </script>
+
 </body>
 </html>
