@@ -4,137 +4,69 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Menú Principal</title>
+  <script src="https://checkout.wompi.co/widget.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #eef2f5;
-      text-align: center;
-      padding: 50px;
+      padding: 20px;
     }
-    .modulo, .menu-principal {
+
+    #botonWompi {
+      margin-top: 20px;
       display: none;
     }
-    .visible {
-      display: block;
-    }
-    button {
-      padding: 12px 25px;
-      margin: 10px;
-      font-size: 16px;
+
+    #btnIniciarPago {
+      background-color: red;
+      color: white;
+      padding: 10px 20px;
+      border: none;
       cursor: pointer;
-    }
-    #wompi-container {
-      margin-top: 30px;
     }
   </style>
 </head>
 <body>
+  <h1>Menú Principal</h1>
+  <button id="btnIniciarPago">Pagar con Wompi</button>
+  <div id="botonWompi"></div>
 
-  <!-- 🧭 Menú Principal -->
-  <div id="menuPrincipal" class="menu-principal visible">
-    <h1>📋 Menú Principal</h1>
-    <button onclick="mostrarModulo('instructivo')">Instructivo</button>
-    <button onclick="mostrarModulo('simulacion')">Simulación</button>
-    <button onclick="mostrarModulo('lista')">Generar Lista</button>
-    <button onclick="mostrarModulo('pago')">Pago</button>
-    <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
-  </div>
-
-  <!-- 🧩 Módulos -->
-  <div id="moduloInstructivo" class="modulo">
-    <h2>📘 Módulo en proceso: Instructivo</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloSimulacion" class="modulo">
-    <h2>🧪 Módulo en proceso: Simulación</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloLista" class="modulo">
-    <h2>📄 Para obtener la lista debe realizar un pago en el botón "Pago"</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloPago" class="modulo">
-    <h2>💳 Módulo de Pago Wompi (Sandbox)</h2>
-    <div id="wompi-container"><p>Generando referencia y firma...</p></div>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloSuscripcion" class="modulo">
-    <h2>📥 Módulo en proceso: Suscripción</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <!-- 🔧 Script de navegación y carga de Wompi -->
   <script>
-    function mostrarModulo(modulo) {
-      document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
+    const PUBLIC_KEY = "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG";
 
-      switch (modulo) {
-        case 'instructivo':
-          document.getElementById('moduloInstructivo').classList.add('visible');
-          break;
-        case 'simulacion':
-          document.getElementById('moduloSimulacion').classList.add('visible');
-          break;
-        case 'lista':
-          document.getElementById('moduloLista').classList.add('visible');
-          break;
-        case 'pago':
-          document.getElementById('moduloPago').classList.add('visible');
-          cargarBotonWompi();
-          break;
-        case 'suscripcion':
-          document.getElementById('moduloSuscripcion').classList.add('visible');
-          break;
-      }
-    }
+    document.getElementById("btnIniciarPago").addEventListener("click", async () => {
+      const reference = `ref_${Date.now()}`;
+      const amount = 150000;
 
-    function volverAlMenu() {
-      document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
-      document.getElementById('menuPrincipal').classList.add('visible');
-      document.getElementById('wompi-container').innerHTML = '<p>Generando referencia y firma...</p>';
-    }
+      try {
+        const response = await fetch("/generate-signature", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount_in_cents: amount,
+            currency: "COP",
+            reference
+          })
+        });
 
-    function cargarBotonWompi() {
-      const referencia = "ref-" + Date.now();
-      const datos = {
-        amount_in_cents: 150000,
-        currency: "COP",
-        reference: referencia
-      };
+        const result = await response.json();
 
-      fetch("https://wompi-backend-nuevo.onrender.com/generate-signature", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos)
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (!data.signature || !data.reference) throw new Error("Firma o referencia faltante");
+        if (!result.signature || !result.reference) {
+          throw new Error("Firma o referencia faltante");
+        }
 
-        const container = document.getElementById("wompi-container");
-        container.innerHTML = ''; // Limpiar
-
-        const script = document.createElement("script");
-        script.src = "https://checkout.wompi.co/widget.js";
-        script.setAttribute("data-render", "button");
-        script.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
-        script.setAttribute("data-currency", "COP");
-        script.setAttribute("data-amount-in-cents", "150000");
-        script.setAttribute("data-reference", data.reference);
-        script.setAttribute("data-signature-integrity", data.signature);
-        script.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/respuesta.html");
-
-        container.appendChild(script);
-      })
-      .catch(error => {
-        document.getElementById("wompi-container").innerHTML = `<p style="color:red;">❌ Error al generar firma.</p><p>${error.message}</p>`;
+        new WidgetCheckout({
+          currency: "COP",
+          amountInCents: amount,
+          reference: result.reference,
+          publicKey: PUBLIC_KEY,
+          redirectUrl: "https://wompi.co",
+          signature: result.signature
+        }).open();
+      } catch (error) {
         console.error("Error:", error);
-      });
-    }
+        alert("Ocurrió un error al generar la firma de pago.");
+      }
+    });
   </script>
 </body>
 </html>
