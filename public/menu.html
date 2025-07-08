@@ -3,32 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menú Principal con Pago Wompi</title>
+  <title>Menú Principal - Pago con Link Wompi</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #eef2f5;
-      text-align: center;
-      padding: 50px;
-    }
-    .modulo, .menu-principal {
-      display: none;
-    }
-    .visible {
-      display: block;
-    }
-    button {
-      padding: 12px 25px;
-      margin: 10px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #wompi-container {
-      margin-top: 20px;
-    }
+    body { font-family: Arial, sans-serif; background: #eef2f5; text-align: center; padding: 50px; }
+    .modulo, .menu-principal { display: none; }
+    .visible { display: block; }
+    button { padding: 12px 25px; margin: 10px; font-size: 16px; cursor: pointer; }
+    a { text-decoration: none; }
   </style>
-  <!-- Carga el SDK de Wompi -->
-  <script src="https://checkout.wompi.co/widget.js"></script>
 </head>
 <body>
 
@@ -59,18 +41,10 @@
   </div>
 
   <div id="moduloPago" class="modulo">
-    <h2>💳 Módulo de Pago Wompi (Prueba Simple)</h2>
-    <div id="wompi-container">
-      <button
-        data-render="button"
-        data-public-key="pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"
-        data-currency="COP"
-        data-amount-in-cents="150000"
-        data-reference="edupago-123456789"
-        data-redirect-url="https://wompi-backend-nuevo.onrender.com/respuesta.html">
-        Pagar con Wompi (Prueba Simple)
-      </button>
-    </div>
+    <h2>💳 Módulo de Pago Wompi (Link de Pago)</h2>
+    <a href="https://checkout.wompi.co/l/mtkxHS" target="_blank" rel="noopener noreferrer">
+      <button>Pagar con Wompi</button>
+    </a>
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
@@ -82,29 +56,13 @@
   <script>
     function mostrarModulo(modulo) {
       document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
-      switch (modulo) {
-        case 'instructivo':
-          document.getElementById('moduloInstructivo').classList.add('visible');
-          break;
-        case 'simulacion':
-          document.getElementById('moduloSimulacion').classList.add('visible');
-          break;
-        case 'lista':
-          document.getElementById('moduloLista').classList.add('visible');
-          break;
-        case 'pago':
-          document.getElementById('moduloPago').classList.add('visible');
-          // Forzar inicialización del widget Wompi cuando se muestra el módulo pago
-          if (window.WompiCheckout && typeof window.WompiCheckout.init === 'function') {
-            window.WompiCheckout.init();
-          }
-          break;
-        case 'suscripcion':
-          document.getElementById('moduloSuscripcion').classList.add('visible');
-          break;
-      }
+      document.getElementById('menuPrincipal').classList.toggle('visible', modulo !== 'pago');
+      document.getElementById('moduloPago').classList.toggle('visible', modulo === 'pago');
+      if (modulo === 'instructivo') document.getElementById('moduloInstructivo').classList.add('visible');
+      if (modulo === 'simulacion') document.getElementById('moduloSimulacion').classList.add('visible');
+      if (modulo === 'lista') document.getElementById('moduloLista').classList.add('visible');
+      if (modulo === 'suscripcion') document.getElementById('moduloSuscripcion').classList.add('visible');
     }
-
     function volverAlMenu() {
       document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
       document.getElementById('menuPrincipal').classList.add('visible');
