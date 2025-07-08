@@ -7,13 +7,11 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware para permitir CORS en todas las rutas
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-
 if (!PRIVATE_KEY) {
   console.error('❌ ERROR: La variable PRIVATE_KEY no está definida.');
   process.exit(1);
@@ -21,22 +19,23 @@ if (!PRIVATE_KEY) {
 
 app.post('/generate-signature', (req, res) => {
   const { amount_in_cents, currency } = req.body;
+  let { reference } = req.body;
 
   if (!amount_in_cents || !currency) {
     return res.status(400).json({ error: 'Faltan datos para generar la firma' });
   }
 
-  // Generar referencia única por cada petición para que sean múltiples pruebas
-  const reference = 'ref_' + Date.now();
+  // Si no se envía referencia, generamos una automáticamente
+  if (!reference) {
+    reference = `auto-ref-${Date.now()}`;
+  }
 
-  // Crear la firma usando la referencia única
   const signature = crypto
     .createHmac('sha256', PRIVATE_KEY)
     .update(`${amount_in_cents}|${currency}|${reference}`)
     .digest('hex');
 
-  // Responder con la firma y la referencia para que el front la use
-  res.json({ signature, reference });
+  res.json({ signature, reference }); // también te devuelvo la referencia usada
 });
 
 app.get('/redirect', (req, res) => {
