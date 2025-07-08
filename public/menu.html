@@ -1,68 +1,115 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Menú Principal</title>
-    <link rel="stylesheet" href="styles.css" />
-    <script src="https://checkout.wompi.co/widget.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>📋 Menú Principal - Pago Wompi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f5f5f5;
+    }
+    nav {
+      background-color: #0077cc;
+      padding: 1rem;
+      border-radius: 5px;
+      margin-bottom: 2rem;
+    }
+    nav ul {
+      list-style: none;
+      padding-left: 0;
+      display: flex;
+      gap: 1rem;
+    }
+    nav ul li {
+      color: white;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 3px;
+      transition: background-color 0.3s;
+    }
+    nav ul li:hover {
+      background-color: #005fa3;
+    }
+    button {
+      padding: 0.7rem 1.5rem;
+      font-size: 1.1rem;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #status {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Menú Principal</h1>
-    </header>
 
-    <main>
-        <!-- Aquí va tu contenido original del menú -->
-        <div id="contenedor-pago">
-            <!-- Botón Wompi insertado en un div para mejor control -->
-            <div id="wompi-button-container"></div>
-        </div>
-    </main>
+  <nav>
+    <ul>
+      <li id="instructivo">Instructivo</li>
+      <li id="simulacion">Simulación</li>
+      <li id="generarLista">Generar Lista</li>
+      <li id="pagoSuscripcion">Pago Suscripción</li>
+    </ul>
+  </nav>
 
-    <script>
-        // Esperar que el DOM esté listo
-        document.addEventListener("DOMContentLoaded", () => {
-            // Configura tu clave pública (revisar que sea la correcta)
-            const publicKey = "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG";
+  <h1>Bienvenido al Menú Principal</h1>
 
-            // Opciones del botón Wompi
-            const options = {
-                currency: "COP",
-                amountInCents: 150000,  // Ejemplo: $1.500,00 COP
-                reference: "tu-referencia-unica-" + Date.now(), // Cambia a referencia única por transacción
-                publicKey: publicKey,
-                // Llama a tu backend para generar la firma (endpoint implementado en backend)
-                generateSignature: async () => {
-                    try {
-                        const res = await fetch("/generate-signature", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                amountInCents: options.amountInCents,
-                                reference: options.reference,
-                            }),
-                        });
-                        if (!res.ok) throw new Error("Error al generar firma");
-                        const data = await res.json();
-                        return data.signature;
-                    } catch (error) {
-                        console.error("Error en generateSignature:", error);
-                        alert("Error generando firma. Intenta nuevamente.");
-                    }
-                },
-                onPaymentFinished: (payment) => {
-                    alert("Pago terminado. Estado: " + payment.status);
-                    // Aquí puedes agregar redirección o actualización de UI
-                },
-            };
+  <button id="btn-pago">Pagar con Wompi</button>
 
-            // Crear el botón y agregarlo al contenedor
-            const wompiButton = window.$wompi.createButton(options);
-            document.getElementById("wompi-button-container").appendChild(wompiButton);
+  <div id="status"></div>
+
+  <script>
+    const backendUrl = 'https://wompi-backend-nuevo.onrender.com';
+
+    // Opcional: eventos para menú (puedes personalizar)
+    document.getElementById('instructivo').addEventListener('click', () => alert('Aquí va el instructivo'));
+    document.getElementById('simulacion').addEventListener('click', () => alert('Simulación activada'));
+    document.getElementById('generarLista').addEventListener('click', () => alert('Generar lista'));
+    document.getElementById('pagoSuscripcion').addEventListener('click', () => alert('Pago Suscripción'));
+
+    const btnPago = document.getElementById('btn-pago');
+    const statusDiv = document.getElementById('status');
+
+    btnPago.addEventListener('click', async () => {
+      statusDiv.textContent = 'Generando referencia y firma...';
+
+      try {
+        const payload = {
+          amount_in_cents: 10000,
+          currency: 'COP'
+        };
+
+        const response = await fetch(`${backendUrl}/generate-signature`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
-    </script>
+
+        if (!response.ok) throw new Error('Error al generar firma');
+
+        const data = await response.json();
+
+        if (data.signature) {
+          statusDiv.textContent = `Firma generada: ${data.signature}`;
+          // Aquí se podría integrar el widget de Wompi o redirigir para pago
+        } else {
+          statusDiv.textContent = 'No se recibió firma en la respuesta';
+        }
+      } catch (error) {
+        statusDiv.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+
 </body>
 </html>
