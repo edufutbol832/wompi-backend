@@ -2,114 +2,138 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>📋 Menú Principal - Pago Wompi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Menú Principal</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 2rem;
-      background-color: #f5f5f5;
+      background-color: #eef2f5;
+      text-align: center;
+      padding: 50px;
     }
-    nav {
-      background-color: #0077cc;
-      padding: 1rem;
-      border-radius: 5px;
-      margin-bottom: 2rem;
+    .modulo, .menu-principal {
+      display: none;
     }
-    nav ul {
-      list-style: none;
-      padding-left: 0;
-      display: flex;
-      gap: 1rem;
-    }
-    nav ul li {
-      color: white;
-      cursor: pointer;
-      padding: 0.5rem 1rem;
-      border-radius: 3px;
-      transition: background-color 0.3s;
-    }
-    nav ul li:hover {
-      background-color: #005fa3;
+    .visible {
+      display: block;
     }
     button {
-      padding: 0.7rem 1.5rem;
-      font-size: 1.1rem;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
+      padding: 12px 25px;
+      margin: 10px;
+      font-size: 16px;
       cursor: pointer;
-      transition: background-color 0.3s;
     }
-    button:hover {
-      background-color: #218838;
-    }
-    #status {
-      margin-top: 1rem;
-      font-weight: bold;
+    #wompi-container {
+      margin-top: 30px;
     }
   </style>
 </head>
 <body>
 
-  <nav>
-    <ul>
-      <li id="instructivo">Instructivo</li>
-      <li id="simulacion">Simulación</li>
-      <li id="generarLista">Generar Lista</li>
-      <li id="pagoSuscripcion">Pago Suscripción</li>
-    </ul>
-  </nav>
+  <!-- 🧭 Menú Principal -->
+  <div id="menuPrincipal" class="menu-principal visible">
+    <h1>📋 Menú Principal</h1>
+    <button onclick="mostrarModulo('instructivo')">Instructivo</button>
+    <button onclick="mostrarModulo('simulacion')">Simulación</button>
+    <button onclick="mostrarModulo('lista')">Generar Lista</button>
+    <button onclick="mostrarModulo('pago')">Pago</button>
+    <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
+  </div>
 
-  <h1>Bienvenido al Menú Principal</h1>
+  <!-- 🧩 Módulos -->
+  <div id="moduloInstructivo" class="modulo">
+    <h2>📘 Módulo en proceso: Instructivo</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
 
-  <button id="btn-pago">Pagar con Wompi</button>
+  <div id="moduloSimulacion" class="modulo">
+    <h2>🧪 Módulo en proceso: Simulación</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
 
-  <div id="status"></div>
+  <div id="moduloLista" class="modulo">
+    <h2>📄 Para obtener la lista debe realizar un pago en el botón "Pago"</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
 
+  <div id="moduloPago" class="modulo">
+    <h2>💳 Módulo de Pago Wompi (Sandbox)</h2>
+    <div id="wompi-container"><p>Generando referencia y firma...</p></div>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
+
+  <div id="moduloSuscripcion" class="modulo">
+    <h2>📥 Módulo en proceso: Suscripción</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
+
+  <!-- 🔧 Script de navegación y carga de Wompi -->
   <script>
-    const backendUrl = 'https://wompi-backend-nuevo.onrender.com';
+    function mostrarModulo(modulo) {
+      document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
 
-    // Opcional: eventos para menú (puedes personalizar)
-    document.getElementById('instructivo').addEventListener('click', () => alert('Aquí va el instructivo'));
-    document.getElementById('simulacion').addEventListener('click', () => alert('Simulación activada'));
-    document.getElementById('generarLista').addEventListener('click', () => alert('Generar lista'));
-    document.getElementById('pagoSuscripcion').addEventListener('click', () => alert('Pago Suscripción'));
-
-    const btnPago = document.getElementById('btn-pago');
-    const statusDiv = document.getElementById('status');
-
-    btnPago.addEventListener('click', async () => {
-      statusDiv.textContent = 'Generando referencia y firma...';
-
-      try {
-        const payload = {
-          amount_in_cents: 10000,
-          currency: 'COP'
-        };
-
-        const response = await fetch(`${backendUrl}/generate-signature`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) throw new Error('Error al generar firma');
-
-        const data = await response.json();
-
-        if (data.signature) {
-          statusDiv.textContent = `Firma generada: ${data.signature}`;
-          // Aquí se podría integrar el widget de Wompi o redirigir para pago
-        } else {
-          statusDiv.textContent = 'No se recibió firma en la respuesta';
-        }
-      } catch (error) {
-        statusDiv.textContent = 'Error: ' + error.message;
+      switch (modulo) {
+        case 'instructivo':
+          document.getElementById('moduloInstructivo').classList.add('visible');
+          break;
+        case 'simulacion':
+          document.getElementById('moduloSimulacion').classList.add('visible');
+          break;
+        case 'lista':
+          document.getElementById('moduloLista').classList.add('visible');
+          break;
+        case 'pago':
+          document.getElementById('moduloPago').classList.add('visible');
+          cargarBotonWompi();
+          break;
+        case 'suscripcion':
+          document.getElementById('moduloSuscripcion').classList.add('visible');
+          break;
       }
-    });
-  </script>
+    }
 
+    function volverAlMenu() {
+      document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
+      document.getElementById('menuPrincipal').classList.add('visible');
+      document.getElementById('wompi-container').innerHTML = '<p>Generando referencia y firma...</p>';
+    }
+
+    function cargarBotonWompi() {
+      const referencia = "edupago-" + Date.now();
+      const datos = {
+        amount_in_cents: 150000,
+        currency: "COP",
+        reference: referencia
+      };
+
+      fetch("https://wompi-backend-nuevo.onrender.com/generate-signature", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.signature) throw new Error("Firma no recibida");
+
+        const script = document.createElement("script");
+        script.src = "https://checkout.wompi.co/widget.js";
+        script.setAttribute("data-render", "button");
+        script.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
+        script.setAttribute("data-currency", "COP");
+        script.setAttribute("data-amount-in-cents", "150000");
+        script.setAttribute("data-reference", data.reference);
+        script.setAttribute("data-signature-integrity", data.signature);
+        script.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/respuesta.html");
+
+        const container = document.getElementById("wompi-container");
+        container.innerHTML = "";
+        container.appendChild(script);
+      })
+      .catch(error => {
+        document.getElementById("wompi-container").innerHTML = `<p style="color:red;">❌ Error al generar firma.</p><p>${error.message}</p>`;
+        console.error("Error:", error);
+      });
+    }
+  </script>
 </body>
 </html>
