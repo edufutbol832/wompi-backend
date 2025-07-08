@@ -3,116 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Menú Principal</title>
+  <title>📋 Menú Principal</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #eef2f5;
+      padding: 2rem;
+      background-color: #f8f9fa;
+    }
+    h1 {
       text-align: center;
-      padding: 50px;
+      color: #333;
     }
-    .modulo, .menu-principal {
-      display: none;
-    }
-    .visible {
+    .boton {
       display: block;
-    }
-    button {
-      padding: 12px 25px;
-      margin: 10px;
-      font-size: 16px;
+      width: 100%;
+      max-width: 400px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      text-align: center;
+      font-size: 1.2rem;
       cursor: pointer;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+    .boton:hover {
+      background-color: #0056b3;
     }
     #wompi-container {
-      margin-top: 30px;
+      text-align: center;
+      margin-top: 2rem;
     }
   </style>
 </head>
 <body>
+  <h1>📋 Menú Principal</h1>
 
-  <!-- 🧭 Menú Principal -->
-  <div id="menuPrincipal" class="menu-principal visible">
-    <h1>📋 Menú Principal</h1>
-    <button onclick="mostrarModulo('instructivo')">Instructivo</button>
-    <button onclick="mostrarModulo('simulacion')">Simulación</button>
-    <button onclick="mostrarModulo('lista')">Generar Lista</button>
-    <button onclick="mostrarModulo('pago')">Pago</button>
-    <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
-  </div>
+  <a class="boton" href="instructivo.html">Instructivo Simulación</a>
+  <a class="boton" href="lista.html">Generar Lista</a>
+  <a class="boton" href="#" onclick="cargarBotonWompi()">Pago Suscripción</a>
 
-  <!-- 🧩 Módulos -->
-  <div id="moduloInstructivo" class="modulo">
-    <h2>📘 Módulo en proceso: Instructivo</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
+  <div id="wompi-container"></div>
 
-  <div id="moduloSimulacion" class="modulo">
-    <h2>🧪 Módulo en proceso: Simulación</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloLista" class="modulo">
-    <h2>📄 Para obtener la lista debe realizar un pago en el botón "Pago"</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloPago" class="modulo">
-    <h2>💳 Módulo de Pago Wompi (Sandbox)</h2>
-    <div id="wompi-container"><p>Generando referencia y firma...</p></div>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloSuscripcion" class="modulo">
-    <h2>📥 Módulo en proceso: Suscripción</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <!-- 🔧 Script -->
   <script>
-    function mostrarModulo(modulo) {
-      document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
-
-      switch (modulo) {
-        case 'instructivo':
-          document.getElementById('moduloInstructivo').classList.add('visible');
-          break;
-        case 'simulacion':
-          document.getElementById('moduloSimulacion').classList.add('visible');
-          break;
-        case 'lista':
-          document.getElementById('moduloLista').classList.add('visible');
-          break;
-        case 'pago':
-          document.getElementById('moduloPago').classList.add('visible');
-          cargarBotonWompi();
-          break;
-        case 'suscripcion':
-          document.getElementById('moduloSuscripcion').classList.add('visible');
-          break;
-      }
-    }
-
-    function volverAlMenu() {
-      document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
-      document.getElementById('menuPrincipal').classList.add('visible');
-      document.getElementById('wompi-container').innerHTML = '<p>Generando referencia y firma...</p>';
-    }
-
     function cargarBotonWompi() {
-      const referencia = "edupago-" + Date.now();
+      const referencia = "ref-" + Date.now();
       const datos = {
         amount_in_cents: 150000,
         currency: "COP",
         reference: referencia
       };
 
-      fetch("https://wompi-backend-nuevo.onrender.com/generate-signature", {
+      fetch("/generate-signature", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos)
       })
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
+        console.log("Firma recibida:", data);
         if (!data.signature || !data.reference) {
           throw new Error("Firma o referencia faltante");
         }
@@ -121,19 +72,20 @@
         script.src = "https://checkout.wompi.co/widget.js";
         script.setAttribute("data-render", "button");
         script.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG");
-        script.setAttribute("data-currency", "COP");
-        script.setAttribute("data-amount-in-cents", "150000");
+        script.setAttribute("data-currency", datos.currency);
+        script.setAttribute("data-amount-in-cents", datos.amount_in_cents);
         script.setAttribute("data-reference", data.reference);
-        script.setAttribute("data-signature-integrity", data.signature);
-        script.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/respuesta.html");
+        script.setAttribute("data-signature:integrity", data.signature.integrity);
+        script.setAttribute("data-signature:algorithm", data.signature.algorithm);
 
         const container = document.getElementById("wompi-container");
         container.innerHTML = ""; // Limpiar anterior
         container.appendChild(script);
       })
       .catch(error => {
-        document.getElementById("wompi-container").innerHTML = `<p style="color:red;">❌ Error al generar firma.</p><p>${error.message}</p>`;
-        console.error("Error:", error);
+        console.error("Error al generar firma:", error);
+        document.getElementById("wompi-container").innerHTML =
+          `<p style="color:red;">❌ Error: ${error.message}</p>`;
       });
     }
   </script>
