@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menú Principal - Botón Wompi Simple</title>
+  <title>Menú Principal con Pago Wompi</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,6 +22,9 @@
       margin: 10px;
       font-size: 16px;
       cursor: pointer;
+    }
+    #wompi-container {
+      margin-top: 20px;
     }
   </style>
   <!-- Carga el SDK de Wompi -->
@@ -59,7 +61,6 @@
   <div id="moduloPago" class="modulo">
     <h2>💳 Módulo de Pago Wompi (Prueba Simple)</h2>
     <div id="wompi-container">
-      <!-- Botón simple de pago Wompi -->
       <button
         data-render="button"
         data-public-key="pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"
@@ -93,6 +94,10 @@
           break;
         case 'pago':
           document.getElementById('moduloPago').classList.add('visible');
+          // Forzar inicialización del widget Wompi cuando se muestra el módulo pago
+          if (window.WompiCheckout && typeof window.WompiCheckout.init === 'function') {
+            window.WompiCheckout.init();
+          }
           break;
         case 'suscripcion':
           document.getElementById('moduloSuscripcion').classList.add('visible');
