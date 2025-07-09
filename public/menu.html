@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menú Principal - Pago Wompi Sandbox Público</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Menú Principal</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -32,98 +32,64 @@
 
   <div id="menuPrincipal" class="menu-principal visible">
     <h1>📋 Menú Principal</h1>
-    <button onclick="mostrarModulo('instructivo')">Instructivo</button>
-    <button onclick="mostrarModulo('simulacion')">Simulación</button>
-    <button onclick="mostrarModulo('lista')">Generar Lista</button>
-    <button onclick="mostrarModulo('pago')">Pago</button>
-    <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
-  </div>
-
-  <div id="moduloInstructivo" class="modulo">
-    <h2>📘 Módulo en proceso: Instructivo</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloSimulacion" class="modulo">
-    <h2>🧪 Módulo en proceso: Simulación</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <div id="moduloLista" class="modulo">
-    <h2>📄 Para obtener la lista debe realizar un pago en el botón "Pago"</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
+    <button id="btnPago">Pago</button>
+    <!-- Otros botones si quieres -->
   </div>
 
   <div id="moduloPago" class="modulo">
     <h2>💳 Módulo de Pago Wompi (Sandbox)</h2>
-    <div id="wompi-container">
-      <!-- Aquí se insertará el botón del widget -->
-    </div>
+    <div id="wompi-container"><p>Generando firma...</p></div>
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
-
-  <div id="moduloSuscripcion" class="modulo">
-    <h2>📥 Módulo en proceso: Suscripción</h2>
-    <button onclick="volverAlMenu()">Retornar</button>
-  </div>
-
-  <!-- Carga el widget de Wompi solo una vez -->
-  <script src="https://checkout.wompi.co/widget.js"></script>
 
   <script>
-    function mostrarModulo(modulo) {
-      document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
+    // Mostrar módulo de pago
+    document.getElementById('btnPago').addEventListener('click', () => {
+      document.getElementById('menuPrincipal').style.display = 'none';
+      document.getElementById('moduloPago').style.display = 'block';
+      cargarBotonWompi();
+    });
 
-      switch (modulo) {
-        case 'instructivo':
-          document.getElementById('moduloInstructivo').classList.add('visible');
-          break;
-        case 'simulacion':
-          document.getElementById('moduloSimulacion').classList.add('visible');
-          break;
-        case 'lista':
-          document.getElementById('moduloLista').classList.add('visible');
-          break;
-        case 'pago':
-          document.getElementById('moduloPago').classList.add('visible');
-          cargarBotonWompi();
-          break;
-        case 'suscripcion':
-          document.getElementById('moduloSuscripcion').classList.add('visible');
-          break;
-      }
-    }
-
+    // Volver al menú
     function volverAlMenu() {
-      document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
-      document.getElementById('menuPrincipal').classList.add('visible');
-      document.getElementById('wompi-container').innerHTML = '';
+      document.getElementById('moduloPago').style.display = 'none';
+      document.getElementById('wompi-container').innerHTML = '<p>Generando firma...</p>';
+      document.getElementById('menuPrincipal').style.display = 'block';
     }
 
-    function cargarBotonWompi() {
-      const referencia = "edupago-" + Date.now();
-      const montoEnCentavos = 150000; // $1.500 COP
+    // Generar firma y cargar botón Wompi
+    async function cargarBotonWompi() {
+      console.log('🔧 cargarBotonWompi() llamada');
+      const referencia = 'edupago-' + Date.now();
+      const datos = { amount_in_cents: 150000, currency: 'COP', reference: referencia };
 
-      // Limpia el contenedor antes de insertar el botón
-      const container = document.getElementById("wompi-container");
-      container.innerHTML = '';
+      try {
+        const res = await fetch('/generate-signature', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datos)
+        });
 
-      // Crear botón con atributos requeridos para el widget de Wompi
-      const boton = document.createElement("button");
-      boton.setAttribute("data-render", "button");
-      boton.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"); // Llave pública sandbox
-      boton.setAttribute("data-currency", "COP");
-      boton.setAttribute("data-amount-in-cents", montoEnCentavos.toString());
-      boton.setAttribute("data-reference", referencia);
-      boton.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/redirect"); // Cambia por tu URL pública de redirección
+        if (!res.ok) throw new Error('Error ' + res.status);
+        const { signature } = await res.json();
+        console.log('🔒 firma recibida', signature);
 
-      boton.textContent = "Pagar con Wompi (Sandbox)";
+        const script = document.createElement('script');
+        script.src = 'https://checkout.wompi.co/widget.js';
+        script.setAttribute('data-render', 'button');
+        script.setAttribute('data-public-key', 'pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG');
+        script.setAttribute('data-currency', 'COP');
+        script.setAttribute('data-amount-in-cents', '150000');
+        script.setAttribute('data-reference', referencia);
+        script.setAttribute('data-signature:integrity', signature);
+        script.setAttribute('data-redirect-url', window.location.origin + '/redirect');
 
-      container.appendChild(boton);
-
-      // Forzar inicialización del widget para detectar el botón recién agregado
-      if (window.WompiCheckout && typeof window.WompiCheckout.init === "function") {
-        window.WompiCheckout.init();
+        const container = document.getElementById('wompi-container');
+        container.innerHTML = ''; // limpiar
+        container.appendChild(script);
+      } catch (e) {
+        console.error(e);
+        document.getElementById('wompi-container').textContent = '❌ Error al generar firma: ' + e.message;
       }
     }
   </script>

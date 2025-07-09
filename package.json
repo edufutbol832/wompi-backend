@@ -13,9 +13,18 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.1.0",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2"
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edufutbol832/wompi-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/edufutbol832/wompi-backend/issues"
+  },
+  "homepage": "https://github.com/edufutbol832/wompi-backend#readme"
 }
