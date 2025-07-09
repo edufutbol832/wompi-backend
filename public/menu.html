@@ -1,22 +1,35 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menú Principal con Pago Wompi Sandbox</title>
+  <title>Menú Principal - Pago Wompi Sandbox Público</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #eef2f5; text-align: center; padding: 50px; }
-    .modulo, .menu-principal { display: none; }
-    .visible { display: block; }
-    button { padding: 12px 25px; margin: 10px; font-size: 16px; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f5;
+      text-align: center;
+      padding: 50px;
+    }
+    .modulo, .menu-principal {
+      display: none;
+    }
+    .visible {
+      display: block;
+    }
+    button {
+      padding: 12px 25px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #wompi-container {
+      margin-top: 30px;
+    }
   </style>
-  <!-- Carga el widget de Wompi -->
-  <script src="https://checkout.wompi.co/widget.js"></script>
 </head>
 <body>
 
-  <!-- Menú Principal -->
   <div id="menuPrincipal" class="menu-principal visible">
     <h1>📋 Menú Principal</h1>
     <button onclick="mostrarModulo('instructivo')">Instructivo</button>
@@ -26,7 +39,6 @@
     <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
   </div>
 
-  <!-- Módulos -->
   <div id="moduloInstructivo" class="modulo">
     <h2>📘 Módulo en proceso: Instructivo</h2>
     <button onclick="volverAlMenu()">Retornar</button>
@@ -43,19 +55,10 @@
   </div>
 
   <div id="moduloPago" class="modulo">
-    <h2>💳 Módulo de Pago Wompi (Sandbox Widget)</h2>
-    <!-- Botón/widget Wompi configurado con llave pública sandbox -->
-    <button
-      id="botonPagoWompi"
-      data-render="button"
-      data-public-key="pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"
-      data-currency="COP"
-      data-amount-in-cents="200000"
-      data-reference=""
-      data-redirect-url="https://wompi-backend-nuevo.onrender.com/respuesta.html">
-      Pagar con Wompi (Sandbox)
-    </button>
-    <br />
+    <h2>💳 Módulo de Pago Wompi (Sandbox)</h2>
+    <div id="wompi-container">
+      <!-- Aquí se insertará el botón del widget -->
+    </div>
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
@@ -64,31 +67,64 @@
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
+  <!-- Carga el widget de Wompi solo una vez -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
+
   <script>
-    // Función para mostrar módulos y forzar inicialización del widget Wompi en módulo pago
     function mostrarModulo(modulo) {
-      document.querySelectorAll('.menu-principal, .modulo').forEach(el => el.classList.remove('visible'));
-      if (modulo === 'pago') {
-        document.getElementById('moduloPago').classList.add('visible');
-        // Generar referencia única para cada pago
-        const boton = document.getElementById('botonPagoWompi');
-        boton.setAttribute('data-reference', 'test_' + Date.now());
-        // Forzar inicialización del widget para detectar el botón visible
-        if (window.WompiCheckout && typeof window.WompiCheckout.init === 'function') {
-          window.WompiCheckout.init();
-        }
-      } else {
-        document.getElementById('menuPrincipal').classList.toggle('visible', modulo !== 'pago');
-        if (modulo === 'instructivo') document.getElementById('moduloInstructivo').classList.add('visible');
-        if (modulo === 'simulacion') document.getElementById('moduloSimulacion').classList.add('visible');
-        if (modulo === 'lista') document.getElementById('moduloLista').classList.add('visible');
-        if (modulo === 'suscripcion') document.getElementById('moduloSuscripcion').classList.add('visible');
+      document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
+
+      switch (modulo) {
+        case 'instructivo':
+          document.getElementById('moduloInstructivo').classList.add('visible');
+          break;
+        case 'simulacion':
+          document.getElementById('moduloSimulacion').classList.add('visible');
+          break;
+        case 'lista':
+          document.getElementById('moduloLista').classList.add('visible');
+          break;
+        case 'pago':
+          document.getElementById('moduloPago').classList.add('visible');
+          cargarBotonWompi();
+          break;
+        case 'suscripcion':
+          document.getElementById('moduloSuscripcion').classList.add('visible');
+          break;
       }
     }
 
     function volverAlMenu() {
-      document.querySelectorAll('.modulo').forEach(el => el.classList.remove('visible'));
+      document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
       document.getElementById('menuPrincipal').classList.add('visible');
+      document.getElementById('wompi-container').innerHTML = '';
+    }
+
+    function cargarBotonWompi() {
+      const referencia = "edupago-" + Date.now();
+      const montoEnCentavos = 150000; // $1.500 COP
+
+      // Limpia el contenedor antes de insertar el botón
+      const container = document.getElementById("wompi-container");
+      container.innerHTML = '';
+
+      // Crear botón con atributos requeridos para el widget de Wompi
+      const boton = document.createElement("button");
+      boton.setAttribute("data-render", "button");
+      boton.setAttribute("data-public-key", "pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"); // Llave pública sandbox
+      boton.setAttribute("data-currency", "COP");
+      boton.setAttribute("data-amount-in-cents", montoEnCentavos.toString());
+      boton.setAttribute("data-reference", referencia);
+      boton.setAttribute("data-redirect-url", "https://wompi-backend-nuevo.onrender.com/redirect"); // Cambia por tu URL pública de redirección
+
+      boton.textContent = "Pagar con Wompi (Sandbox)";
+
+      container.appendChild(boton);
+
+      // Forzar inicialización del widget para detectar el botón recién agregado
+      if (window.WompiCheckout && typeof window.WompiCheckout.init === "function") {
+        window.WompiCheckout.init();
+      }
     }
   </script>
 
