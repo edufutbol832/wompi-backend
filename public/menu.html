@@ -1,16 +1,18 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menú Principal - Pago con Link Wompi</title>
+  <title>Menú Principal con Pago Wompi Sandbox</title>
   <style>
     body { font-family: Arial, sans-serif; background: #eef2f5; text-align: center; padding: 50px; }
     .modulo, .menu-principal { display: none; }
     .visible { display: block; }
     button { padding: 12px 25px; margin: 10px; font-size: 16px; cursor: pointer; }
-    a { text-decoration: none; }
   </style>
+  <!-- Carga el widget de Wompi -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
 </head>
 <body>
 
@@ -41,10 +43,19 @@
   </div>
 
   <div id="moduloPago" class="modulo">
-    <h2>💳 Módulo de Pago Wompi (Link de Pago)</h2>
-    <a href="https://checkout.wompi.co/l/mtkxHS" target="_blank" rel="noopener noreferrer">
-      <button>Pagar con Wompi</button>
-    </a>
+    <h2>💳 Módulo de Pago Wompi (Sandbox Widget)</h2>
+    <!-- Botón/widget Wompi configurado con llave pública sandbox -->
+    <button
+      id="botonPagoWompi"
+      data-render="button"
+      data-public-key="pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"
+      data-currency="COP"
+      data-amount-in-cents="200000"
+      data-reference=""
+      data-redirect-url="https://wompi-backend-nuevo.onrender.com/respuesta.html">
+      Pagar con Wompi (Sandbox)
+    </button>
+    <br />
     <button onclick="volverAlMenu()">Retornar</button>
   </div>
 
@@ -54,17 +65,29 @@
   </div>
 
   <script>
+    // Función para mostrar módulos y forzar inicialización del widget Wompi en módulo pago
     function mostrarModulo(modulo) {
-      document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
-      document.getElementById('menuPrincipal').classList.toggle('visible', modulo !== 'pago');
-      document.getElementById('moduloPago').classList.toggle('visible', modulo === 'pago');
-      if (modulo === 'instructivo') document.getElementById('moduloInstructivo').classList.add('visible');
-      if (modulo === 'simulacion') document.getElementById('moduloSimulacion').classList.add('visible');
-      if (modulo === 'lista') document.getElementById('moduloLista').classList.add('visible');
-      if (modulo === 'suscripcion') document.getElementById('moduloSuscripcion').classList.add('visible');
+      document.querySelectorAll('.menu-principal, .modulo').forEach(el => el.classList.remove('visible'));
+      if (modulo === 'pago') {
+        document.getElementById('moduloPago').classList.add('visible');
+        // Generar referencia única para cada pago
+        const boton = document.getElementById('botonPagoWompi');
+        boton.setAttribute('data-reference', 'test_' + Date.now());
+        // Forzar inicialización del widget para detectar el botón visible
+        if (window.WompiCheckout && typeof window.WompiCheckout.init === 'function') {
+          window.WompiCheckout.init();
+        }
+      } else {
+        document.getElementById('menuPrincipal').classList.toggle('visible', modulo !== 'pago');
+        if (modulo === 'instructivo') document.getElementById('moduloInstructivo').classList.add('visible');
+        if (modulo === 'simulacion') document.getElementById('moduloSimulacion').classList.add('visible');
+        if (modulo === 'lista') document.getElementById('moduloLista').classList.add('visible');
+        if (modulo === 'suscripcion') document.getElementById('moduloSuscripcion').classList.add('visible');
+      }
     }
+
     function volverAlMenu() {
-      document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
+      document.querySelectorAll('.modulo').forEach(el => el.classList.remove('visible'));
       document.getElementById('menuPrincipal').classList.add('visible');
     }
   </script>
