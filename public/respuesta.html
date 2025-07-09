@@ -1,38 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Resultado del Pago</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f3f3f3;
       padding: 30px;
-    }
-    .container {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
       text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .status {
       font-size: 24px;
       margin-bottom: 15px;
     }
-    .approved { color: green; }
-    .declined { color: red; }
+    .approved {
+      color: green;
+    }
+    .declined {
+      color: red;
+    }
     .info {
       font-size: 18px;
       margin-top: 10px;
     }
-    .return-button {
-      margin-top: 30px;
-      display: none;
-    }
     button {
+      margin-top: 30px;
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
@@ -40,60 +33,41 @@
   </style>
 </head>
 <body>
-  <div class="container" role="main">
-    <h1>✅ Resultado del Pago</h1>
-    <div id="resultado" class="status" aria-live="polite">Cargando resultado...</div>
-    <div class="info" id="detalles"></div>
-    <div class="return-button" id="retornarBtn">
-      <button onclick="window.location.href='menu.html'">Retornar al Menú</button>
-    </div>
-  </div>
+  <h1>✅ Resultado del Pago</h1>
+  <div id="resultado" class="status">Cargando resultado...</div>
+  <div class="info" id="detalles"></div>
+  <button onclick="window.location.href='test_wompi.html'">Volver a Pagar</button>
 
   <script>
-    async function obtenerResultadoPago() {
+    function mostrarResultado() {
       const params = new URLSearchParams(window.location.search);
-      const transactionId = params.get("id");
-      const btn = document.getElementById("retornarBtn");
+      const status = params.get('status');
+      const reference = params.get('reference');
+      const amount = params.get('amount');
+      const currency = params.get('currency');
 
-      if (!transactionId || transactionId.trim() === "") {
-        document.getElementById("resultado").innerHTML = "❌ No se encontró un ID de transacción válido en la URL.";
-        btn.style.display = "block";
+      if (!status) {
+        document.getElementById('resultado').textContent = '❌ No se encontró información del pago.';
         return;
       }
 
-      try {
-        // Se recomienda crear un endpoint en backend que consulte la API de Wompi y proteja la key privada
-        const response = await fetch(`/transaction-status?id=${transactionId}`);
-        if (!response.ok) throw new Error("Error en la consulta al backend.");
-        const data = await response.json();
+      const montoFormateado = amount ? (amount / 100).toFixed(2) : '0.00';
 
-        if (data && data.status) {
-          const estado = data.status;
-          const referencia = data.reference;
-          const moneda = data.currency;
-          const monto = (data.amount_in_cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-          let mensaje = estado === "APPROVED"
-            ? `<span class="approved">Estado del pago: ${estado}</span>`
-            : `<span class="declined">Estado del pago: ${estado}</span>`;
-
-          document.getElementById("resultado").innerHTML = `✅ Resultado del Pago<br>${mensaje}`;
-          document.getElementById("detalles").innerHTML = `
-            💳 Referencia: ${referencia}<br>
-            💰 Monto: ${monto} ${moneda}
-          `;
-        } else {
-          document.getElementById("resultado").innerHTML = "⚠️ No se pudo obtener la información del pago.";
-        }
-      } catch (error) {
-        console.error(error);
-        document.getElementById("resultado").innerHTML = "⚠️ Error al consultar el estado del pago.";
+      let claseEstado = '';
+      if (status.toUpperCase() === 'APPROVED') {
+        claseEstado = 'approved';
+      } else if (status.toUpperCase() === 'DECLINED' || status.toUpperCase() === 'FAILED') {
+        claseEstado = 'declined';
       }
 
-      btn.style.display = "block";
+      document.getElementById('resultado').innerHTML = `Estado del pago: <span class="${claseEstado}">${status}</span>`;
+      document.getElementById('detalles').innerHTML = `
+        Referencia: ${reference || 'N/A'}<br />
+        Monto: ${montoFormateado} ${currency || ''}
+      `;
     }
 
-    obtenerResultadoPago();
+    mostrarResultado();
   </script>
 </body>
 </html>
