@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Menú Principal - Botón Wompi Simple</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f5;
+      text-align: center;
+      padding: 50px;
+    }
+    .modulo, .menu-principal {
+      display: none;
+    }
+    .visible {
+      display: block;
+    }
+    button {
+      padding: 12px 25px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+  <!-- Carga el SDK de Wompi -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
+</head>
+<body>
+
+  <!-- Menú Principal -->
+  <div id="menuPrincipal" class="menu-principal visible">
+    <h1>📋 Menú Principal</h1>
+    <button onclick="mostrarModulo('instructivo')">Instructivo</button>
+    <button onclick="mostrarModulo('simulacion')">Simulación</button>
+    <button onclick="mostrarModulo('lista')">Generar Lista</button>
+    <button onclick="mostrarModulo('pago')">Pago</button>
+    <button onclick="mostrarModulo('suscripcion')">Suscripción</button>
+  </div>
+
+  <!-- Módulos -->
+  <div id="moduloInstructivo" class="modulo">
+    <h2>📘 Módulo en proceso: Instructivo</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
+
+  <div id="moduloSimulacion" class="modulo">
+    <h2>🧪 Módulo en proceso: Simulación</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
+
+  <div id="moduloLista" class="modulo">
+    <h2>📄 Para obtener la lista debe realizar un pago en el botón "Pago"</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
+
+  <div id="moduloPago" class="modulo">
+    <h2>💳 Módulo de Pago Wompi (Prueba Simple)</h2>
+    <div id="wompi-container">
+      <!-- Botón simple de pago Wompi -->
+      <button
+        data-render="button"
+        data-public-key="pub_test_K9UBxtRMrdrjaNBNdpuqoLYxmh8feExG"
+        data-currency="COP"
+        data-amount-in-cents="150000"
+        data-reference="edupago-123456789"
+        data-redirect-url="https://wompi-backend-nuevo.onrender.com/respuesta.html">
+        Pagar con Wompi (Prueba Simple)
+      </button>
+    </div>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
+
+  <div id="moduloSuscripcion" class="modulo">
+    <h2>📥 Módulo en proceso: Suscripción</h2>
+    <button onclick="volverAlMenu()">Retornar</button>
+  </div>
+
+  <script>
+    function mostrarModulo(modulo) {
+      document.querySelectorAll('.menu-principal, .modulo').forEach(div => div.classList.remove('visible'));
+      switch (modulo) {
+        case 'instructivo':
+          document.getElementById('moduloInstructivo').classList.add('visible');
+          break;
+        case 'simulacion':
+          document.getElementById('moduloSimulacion').classList.add('visible');
+          break;
+        case 'lista':
+          document.getElementById('moduloLista').classList.add('visible');
+          break;
+        case 'pago':
+          document.getElementById('moduloPago').classList.add('visible');
+          break;
+        case 'suscripcion':
+          document.getElementById('moduloSuscripcion').classList.add('visible');
+          break;
+      }
+    }
+
+    function volverAlMenu() {
+      document.querySelectorAll('.modulo').forEach(div => div.classList.remove('visible'));
+      document.getElementById('menuPrincipal').classList.add('visible');
+    }
+  </script>
+
+</body>
+</html>

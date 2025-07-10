@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fetch = require('node-fetch');
+const generateSignature = require('./generate-signature');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -17,7 +19,13 @@ app.use((req, res, next) => {
 // 👉 Servir archivos estáticos desde carpeta public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 👉 Redirección luego del pago
+// 👉 Middleware JSON
+app.use(express.json());
+
+// 👉 Ruta para generar firma (desde archivo externo)
+app.use('/', generateSignature);
+
+// 👉 Ruta para redirección después del pago
 app.get('/redirect', async (req, res) => {
   const transactionId = req.query.id;
 
@@ -37,6 +45,12 @@ app.get('/redirect', async (req, res) => {
     console.error('Error consultando transacción Wompi:', error);
     return res.redirect('/respuesta.html');
   }
+});
+
+// 👉 Ruta para recibir notificaciones de Wompi
+app.post('/webhook', express.json(), (req, res) => {
+  console.log('🔔 Webhook recibido:', req.body);
+  res.status(200).send('OK');
 });
 
 // ✅ Iniciar servidor
